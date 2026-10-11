@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/aws-sdk/2.1354.0/aws-sdk.min.js"></script>
   <meta charset="UTF-8">
   <title>MANĀR | Editorial Portal</title>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
@@ -57,5 +58,45 @@
       <button type="submit">Publish Article</button>
     </form>
   </div>
+  <script>
+  // Initialize AWS Credentials & DynamoDB
+  AWS.config.region = 'ap-south-1'; // Change to your preferred AWS region
+  AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+    IdentityPoolId: 'ap-south-1:be40eb5b-9951-44d2-a159-6f2846331267', // We will generate this in AWS Console next
+  });
+
+  const dynamodb = new AWS.DynamoDB.DocumentClient();
+
+  document.getElementById('articleForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const articleData = {
+      id: Date.now().toString(),
+      title: document.getElementById('title').value,
+      author: document.getElementById('author').value,
+      category: document.getElementById('category').value,
+      formatType: document.getElementById('formatType').value,
+      excerpt: document.getElementById('excerpt').value,
+      content: document.getElementById('content').value,
+      image: document.getElementById('image').value || '',
+      video: document.getElementById('video').value || '',
+      createdAt: new Date().toISOString()
+    };
+
+    const params = {
+      TableName: 'Articles',
+      Item: articleData
+    };
+
+    try {
+      await dynamodb.put(params).promise();
+      alert('Article published successfully!');
+      this.reset();
+    } catch (err) {
+      console.error('Error publishing article:', err);
+      alert('Failed to publish article. Check browser console for details.');
+    }
+  });
+</script>
 </body>
 </html>
