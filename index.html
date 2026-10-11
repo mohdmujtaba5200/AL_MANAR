@@ -1,252 +1,151 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>MANĀR | Law, History, Public Life</title>
-  
-  <!-- AWS SDK CDN -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/aws-sdk/2.1354.0/aws-sdk.min.js"></script>
-
-  <!-- Academic Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Lora:ital,wght@0,400;0,600;1,400&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-
-  <style>
-    :root {
-      --bg-primary: #FDFBF7;
-      --bg-secondary: #F5F2EB;
-      --text-main: #0F172A;
-      --text-muted: #475569;
-      --accent-red: #7F1D1D;
-      --accent-amber: #B45309;
-      --border-color: #E2E8F0;
-      --font-heading: 'Cinzel', serif;
-      --font-body: 'Lora', serif;
-      --font-sans: 'Plus Jakarta Sans', sans-serif;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background-color: var(--bg-primary); color: var(--text-main); font-family: var(--font-body); line-height: 1.6; }
-
-    .utility-bar { background-color: #1E293B; color: #CBD5E1; font-family: var(--font-sans); font-size: 0.8rem; padding: 6px 5%; display: flex; justify-content: space-between; align-items: center; }
-    .ticker { display: flex; align-items: center; gap: 10px; }
-    .badge { background: var(--accent-red); color: white; padding: 2px 8px; font-weight: 600; font-size: 0.7rem; text-transform: uppercase; border-radius: 2px; }
-
-    header { text-align: center; padding: 35px 20px 20px; border-bottom: 2px solid var(--text-main); position: relative; }
-    .logo-container { display: flex; justify-content: center; align-items: center; gap: 15px; position: relative; }
-    .site-title { font-family: var(--font-heading); font-size: 3.2rem; letter-spacing: 2px; text-transform: uppercase; color: var(--text-main); font-weight: 700; }
-    .arabic-title { font-family: 'Amiri', serif; font-size: 2rem; color: var(--accent-red); margin-left: 10px; }
-    .site-tagline { font-style: italic; color: var(--text-muted); margin-top: 5px; font-size: 1.1rem; }
-    
-    .top-logo-icon { position: absolute; right: 5%; top: 10px; width: 50px; height: 50px; opacity: 0.9; }
-
-    nav { background-color: var(--accent-red); padding: 0 5%; overflow-x: auto; white-space: nowrap; }
-    .nav-links { display: flex; list-style: none; justify-content: center; align-items: center; }
-    .nav-links a { color: white; text-decoration: none; font-family: var(--font-sans); font-size: 0.85rem; font-weight: 600; text-transform: uppercase; padding: 12px 16px; display: inline-block; transition: background 0.2s; cursor: pointer; }
-    .nav-links a:hover { background-color: rgba(255,255,255,0.15); }
-
-    .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; display: grid; grid-template-columns: 2.3fr 1fr; gap: 40px; }
-
-    .section-label { font-family: var(--font-sans); font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); border-bottom: 1px solid #CBD5E1; padding-bottom: 5px; margin-bottom: 20px; }
-    .format-tag { font-family: var(--font-sans); font-size: 0.75rem; font-weight: 700; background-color: var(--accent-amber); color: white; padding: 3px 8px; text-transform: uppercase; display: inline-block; margin-bottom: 12px; }
-    
-    .search-box { width: 100%; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 4px; font-family: var(--font-sans); font-size: 0.9rem; margin-bottom: 20px; outline: none; background: white; }
-    .search-box:focus { border-color: var(--accent-red); }
-
-    .article-card { background: white; padding: 30px; margin-bottom: 25px; border-radius: 6px; border: 1px solid var(--border-color); position: relative; transition: transform 0.2s, box-shadow 0.2s; }
-    .article-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-
-    .sidebar { background-color: var(--bg-secondary); padding: 25px; border-left: 3px solid var(--accent-red); }
-    .sidebar-list { list-style: none; margin-top: 15px; }
-    .sidebar-list li { margin-bottom: 15px; border-bottom: 1px solid #E2E8F0; padding-bottom: 10px; }
-    .sidebar-list a { color: var(--text-main); text-decoration: none; font-weight: 600; font-size: 0.95rem; font-family: var(--font-sans); cursor: pointer; }
-    .sidebar-list a:hover { color: var(--accent-red); }
-
-    .newsletter-box { background: white; border: 1px solid var(--border-color); padding: 20px; margin-top: 30px; border-top: 3px solid var(--accent-red); }
-    .newsletter-box h4 { font-family: var(--font-heading); margin-bottom: 8px; }
-    .newsletter-box p { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px; font-family: var(--font-sans); }
-    .newsletter-box input { width: 100%; padding: 8px; border: 1px solid #CBD5E1; margin-bottom: 10px; font-family: var(--font-sans); }
-    .newsletter-box button { width: 100%; background: var(--text-main); color: white; border: none; padding: 10px; font-family: var(--font-sans); font-weight: 600; cursor: pointer; }
-    .newsletter-box button:hover { background: var(--accent-red); }
-
-    footer { background-color: #0F172A; color: #94A3B8; padding: 40px 5% 20px; font-family: var(--font-sans); font-size: 0.85rem; margin-top: 60px; text-align: center; }
-    .footer-links { display: flex; justify-content: center; gap: 20px; margin-bottom: 20px; list-style: none; }
-    .footer-links a { color: white; text-decoration: none; }
-
-    @media (max-width: 768px) {
-      .container { grid-template-columns: 1fr !important; padding: 0 16px !important; gap: 24px !important; }
-      .nav-links { display: flex !important; flex-wrap: wrap !important; justify-content: center !important; gap: 6px !important; padding: 8px 0 !important; }
-      .nav-links li a { font-size: 0.75rem !important; padding: 4px 8px !important; }
-      .article-card { padding: 18px !important; }
-      .site-title { font-size: 2.2rem !important; }
-      .top-logo-icon { display: none !important; }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src https://*.amazonaws.com; img-src 'self' data:; base-uri 'none'; form-action 'self'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="description" content="MANĀR: essays and analysis on law, history, society and public life.">
+<title>MANĀR | Law, History, Public Life</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/aws-sdk/2.1354.0/aws-sdk.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@700&family=Cinzel:wght@600;700&family=Lora:ital,wght@0,400;0,600;1,400&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg-primary:#FDFBF7;--bg-secondary:#F5F2EB;--text-main:#0F172A;--accent-red:#7F1D1D;--accent-amber:#B45309;--border-color:#E2E8F0;--muted:#475569}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg-primary);color:var(--text-main);font:400 1.05rem/1.7 'Lora',serif}
+a{color:var(--accent-red)}
+:focus-visible{outline:3px solid var(--accent-amber);outline-offset:2px}
+.skip{position:absolute;left:-999px;background:var(--text-main);color:#fff;padding:8px 14px}.skip:focus{left:8px;top:8px;z-index:9}
+.ui{font-family:'Plus Jakarta Sans',sans-serif}
+header{text-align:center;padding:32px 20px 18px;border-bottom:2px solid var(--text-main)}
+.brand{margin:0;font:700 clamp(2.2rem,7vw,3.4rem)/1.1 'Cinzel',serif;letter-spacing:.04em;color:var(--text-main);text-decoration:none;display:inline-block}
+.brand span{font-family:'Amiri',serif;color:var(--accent-red);margin-left:.3em}
+.tag{margin:6px 0 0;color:var(--muted);font-style:italic}
+nav{background:var(--accent-red);position:sticky;top:0;z-index:5}
+.bar{max-width:1200px;margin:auto;padding:8px 20px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.cats{display:flex;gap:4px;overflow-x:auto;flex:1}
+.cats button{background:none;border:0;color:#fff;font:600 .9rem 'Plus Jakarta Sans',sans-serif;padding:10px 14px;cursor:pointer;white-space:nowrap;border-bottom:3px solid transparent}
+.cats button:hover{background:rgba(255,255,255,.12)}
+.cats button[aria-pressed=true]{border-bottom-color:var(--accent-amber);background:rgba(0,0,0,.18)}
+.search{padding:9px 12px;border:0;min-width:200px;font:500 .9rem 'Plus Jakarta Sans',sans-serif;background:#fff;color:var(--text-main)}
+.wrap{max-width:1200px;margin:32px auto;padding:0 20px;display:grid;grid-template-columns:minmax(0,2.3fr) minmax(0,1fr);gap:40px}
+.wrap.single{grid-template-columns:minmax(0,1fr);max-width:760px}
+.meta{font:500 .85rem 'Plus Jakarta Sans',sans-serif;color:var(--muted);margin:0 0 6px}
+.meta b{color:var(--accent-amber);font-weight:600}
+.card{padding:24px 0;border-bottom:1px solid var(--border-color)}
+.card h2{font:600 1.4rem/1.3 'Lora',serif;margin:0 0 8px}
+.card h2 a,.feat h2 a{color:var(--text-main);text-decoration:none}.card h2 a:hover,.feat h2 a:hover{color:var(--accent-red);text-decoration:underline}
+.card p{margin:0}
+.feat{background:var(--bg-secondary);border-left:4px solid var(--accent-red);padding:28px;margin-bottom:8px}
+.feat h2{font:600 clamp(1.7rem,4vw,2.3rem)/1.2 'Lora',serif;margin:0 0 12px}
+.more{display:inline-block;margin-top:10px;font:600 .9rem 'Plus Jakarta Sans',sans-serif}
+aside .box{background:var(--bg-secondary);border-left:3px solid var(--accent-red);padding:20px;margin-bottom:24px}
+aside h3{font:600 1rem 'Cinzel',serif;margin:0 0 8px}
+aside ul{list-style:none;margin:0;padding:0}aside li{padding:6px 0;border-bottom:1px solid var(--border-color);font:500 .9rem 'Plus Jakarta Sans',sans-serif}
+aside li button{all:unset;cursor:pointer;color:var(--accent-red);width:100%;display:flex;justify-content:space-between}
+aside li button:focus-visible{outline:3px solid var(--accent-amber)}
+.read h1{font:600 clamp(1.9rem,5vw,2.8rem)/1.2 'Lora',serif;margin:8px 0 12px}
+.read .lede{font-style:italic;color:var(--muted);font-size:1.15rem;border-bottom:1px solid var(--border-color);padding-bottom:18px}
+.read .body p{margin:0 0 1.2em;max-width:68ch}
+.btn{font:600 .9rem 'Plus Jakarta Sans',sans-serif;background:var(--accent-red);color:#fff;border:0;padding:10px 16px;cursor:pointer}
+.btn.alt{background:none;color:var(--accent-red);border:1px solid var(--accent-red)}
+.sk{height:96px;margin:18px 0;background:linear-gradient(90deg,var(--bg-secondary),#fff,var(--bg-secondary));background-size:200% 100%;animation:sh 1.4s infinite}
+@keyframes sh{to{background-position:-200% 0}}
+.empty{padding:40px 0;text-align:center;color:var(--muted)}
+footer{border-top:2px solid var(--text-main);margin-top:40px;padding:24px 20px;text-align:center;font:500 .85rem 'Plus Jakarta Sans',sans-serif;color:var(--muted)}
+.sr{position:absolute;left:-999px}
+@media(max-width:820px){.wrap{grid-template-columns:1fr;gap:12px}.search{width:100%}aside{order:2}}
+@media(prefers-reduced-motion:reduce){.sk{animation:none}}
+</style>
 </head>
 <body>
-
-  <div class="utility-bar">
-    <div class="ticker">
-      <span class="badge">Latest Issue</span>
-      <span>Interrogating caste, class, and legal modernity across post-colonial societies.</span>
-    </div>
-    <div>Oct 2026</div>
+<a class="skip" href="#main">Skip to articles</a>
+<header>
+  <a class="brand" href="#/" aria-label="MANĀR home">MANĀR<span lang="ar" dir="rtl">مَنار</span></a>
+  <p class="tag">Law, history, society and public life.</p>
+</header>
+<nav aria-label="Categories and search">
+  <div class="bar">
+    <div class="cats" id="cats"></div>
+    <label class="sr" for="q">Search articles</label>
+    <input class="search" id="q" type="search" placeholder="Search titles, authors, text" autocomplete="off">
   </div>
+</nav>
+<div class="wrap" id="wrap">
+  <main id="main" aria-live="polite"></main>
+  <aside id="side">
+    <div class="box"><h3>About MANĀR</h3><p style="margin:0">Critical essays on law, history and society, written from South Asia and in conversation with the world. <a href="about.html">Read more</a></p></div>
+    <div class="box"><h3>Browse by topic</h3><ul id="topics"></ul></div>
+  </aside>
+</div>
+<footer>© <span id="yr"></span> MANĀR · <a href="about.html">About</a> · <a href="admin.html">Editors</a></footer>
+<script>
+const POOL='ap-south-1:be40eb5b-9951-44d2-a159-6f2846331267',REGION='ap-south-1',TABLE='Articles';
+AWS.config.update({region:REGION});
+AWS.config.credentials=new AWS.CognitoIdentityCredentials({IdentityPoolId:POOL},{region:REGION});
+const db=new AWS.DynamoDB.DocumentClient({region:REGION});
+const CATS=['All','Law & Courts','Society','Ideas','Histories'];
+let all=[],cat='All',q='',ready=false;
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const mins=t=>Math.max(1,Math.round(String(t||'').split(/\s+/).length/220));
+const fmt=d=>{const x=new Date(d);return isNaN(x)?'':x.toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'})};
+const paras=t=>esc(t).split(/\n{2,}/).map(p=>'<p>'+p.replace(/\n/g,'<br>')+'</p>').join('');
+const href=a=>'#/a/'+encodeURIComponent(a.id);
+const blurb=a=>a.excerpt||String(a.content||'').slice(0,220)+'…';
+const meta=a=>`<p class="meta">By ${esc(a.author)} · <b>${esc(a.category)}</b> · ${fmt(a.createdAt)} · ${mins(a.content)} min read</p>`;
 
-  <header>
-    <svg class="top-logo-icon" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M10 30 L50 10 L90 30 L50 90 Z" stroke="#0F172A" stroke-width="6" fill="none"/>
-      <path d="M30 40 L50 25 L70 40 L50 70 Z" fill="#7F1D1D"/>
-    </svg>
-    <div class="logo-container">
-      <h1 class="site-title">MANĀR <span class="arabic-title">مَنَار</span></h1>
-    </div>
-    <p class="site-tagline">Law, History, Public Life.</p>
-  </header>
-
-  <nav>
-    <ul class="nav-links">
-      <li><a onclick="filterCategory('All')">Latest</a></li>
-      <li><a onclick="filterCategory('Law & Courts')">Law & Courts</a></li>
-      <li><a onclick="filterCategory('Society')">Society</a></li>
-      <li><a onclick="filterCategory('Ideas')">Ideas</a></li>
-      <li><a onclick="filterCategory('Histories')">Histories</a></li>
-      <li><a onclick="filterCategory('South Asia')">South Asia</a></li>
-      <li><a onclick="filterCategory('Reviews & Debates')">Reviews & Debates</a></li>
-      <li><a href="about.html">About Us</a></li>
-      <li><a href="admin.html" style="background: var(--accent-amber); padding: 5px 12px; border-radius: 4px; color: #0F172A; font-weight: 700;">+ Upload Article</a></li>
-    </ul>
-  </nav>
-
-  <div class="container">
-    <main>
-      <input type="text" id="search-input" class="search-box" placeholder="🔍 Search articles by title, author, or keywords..." onkeyup="searchArticles()">
-      <div class="section-label" id="current-section-label">Latest Essays & Research Papers</div>
-      <div id="articles-container">
-        <p style="color: var(--text-muted);">Loading articles from database...</p>
-      </div>
-    </main>
-
-    <aside>
-      <div class="sidebar">
-        <div class="section-label">Analytical Lenses</div>
-        <p style="font-size: 0.85rem; color: var(--text-muted); font-style: italic; margin-bottom: 15px;">
-          Deconstructing structural modernities through the intersecting frameworks of caste, labor, and legal theory.
-        </p>
-        <ul class="sidebar-list">
-          <li><a onclick="filterCategory('Law & Courts')">Anti-Caste Jurisprudence</a></li>
-          <li><a onclick="filterCategory('Ideas')">Ethical Modernism</a></li>
-          <li><a onclick="filterCategory('Society')">Labor Equity & Materialism</a></li>
-          <li><a onclick="filterCategory('Histories')">Subaltern Hermeneutics</a></li>
-        </ul>
-
-        <div class="newsletter-box">
-          <h4>Subscribe to Manār</h4>
-          <p>Get our latest essays and research papers delivered straight to your inbox.</p>
-          <input type="email" placeholder="Enter your email address...">
-          <button onclick="alert('Thank you for subscribing to MANĀR!')">Subscribe</button>
-        </div>
-      </div>
-    </aside>
-  </div>
-
-  <footer>
-    <ul class="footer-links">
-      <li><a href="about.html">About Us</a></li>
-      <li><a href="admin.html">Editorial Portal</a></li>
-      <li><a href="about.html">Submission Guidelines</a></li>
-    </ul>
-    <p>© 2026 MANĀR. All rights reserved. Grounded in South Asia & attentive to global traditions.</p>
-  </footer>
-
-  <script>
-    AWS.config.update({ region: 'ap-south-1' });
-    AWS.config.credentials = new AWS.CognitoIdentityCredentials({
-      IdentityPoolId: 'ap-south-1:be40eb5b-9951-44d2-a159-6f2846331267'
-    });
-
-    let allArticles = [];
-
-    function getDynamoDB() {
-      return new Promise((resolve, reject) => {
-        AWS.config.credentials.get((err) => {
-          if (err) reject(err);
-          else resolve(new AWS.DynamoDB.DocumentClient({ region: 'ap-south-1' }));
-        });
-      });
-    }
-
-    async function fetchArticles() {
-      const container = document.getElementById('articles-container');
-      try {
-        const dynamodb = await getDynamoDB();
-        const data = await dynamodb.scan({ TableName: 'Articles' }).promise();
-
-        if (!data.Items || data.Items.length === 0) {
-          container.innerHTML = '<p style="color: var(--text-muted);">No published articles found in the database.</p>';
-          return;
-        }
-
-        allArticles = data.Items.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        renderArticles(allArticles);
-
-      } catch (err) {
-        console.error('Error fetching articles:', err);
-        container.innerHTML = `<p style="color: #7F1D1D; background: #FEE2E2; padding: 12px; border-radius: 4px;">Failed to load articles: ${err.message}</p>`;
-      }
-    }
-
-    function renderArticles(articles) {
-      const container = document.getElementById('articles-container');
-      if (articles.length === 0) {
-        container.innerHTML = '<p style="color: var(--text-muted);">No articles match your selection.</p>';
-        return;
-      }
-
-      container.innerHTML = articles.map(article => `
-        <article class="article-card">
-          <div style="margin-bottom: 10px;">
-            <span class="format-tag">${article.category || 'General'} • ${article.formatType || 'Article'}</span>
-          </div>
-          <h2 style="margin: 5px 0 10px 0; color: #0F172A; font-family: var(--font-heading); font-size: 1.7rem; line-height: 1.25;">${article.title || 'Untitled'}</h2>
-          <p style="font-size: 0.85rem; color: #64748B; font-family: var(--font-sans); margin-bottom: 15px;">By ${article.author || 'Anonymous'} • ${article.createdAt ? new Date(article.createdAt).toLocaleDateString() : 'Oct 2026'}</p>
-          <p style="color: #334155; line-height: 1.7; margin-bottom: 20px; font-size: 1.05rem;">${article.excerpt || article.content || ''}</p>
-          ${article.image ? `<img src="${article.image}" alt="Article Image" style="max-width: 100%; border-radius: 4px; margin-bottom: 20px;" onerror="this.style.display='none'">` : ''}
-          ${article.video ? `<div style="margin-bottom: 20px;"><a href="${article.video}" target="_blank" style="color: var(--accent-red); font-weight: 600; text-decoration: none; font-family: var(--font-sans);">Watch Media Link &rarr;</a></div>` : ''}
-          
-          <div style="display: flex; gap: 15px; align-items: center; border-top: 1px solid #F1F5F9; padding-top: 15px; font-size: 0.85rem; font-family: var(--font-sans);">
-            <span style="color: var(--text-muted); font-weight: 600;">Share:</span>
-            <a href="https://twitter.com/intent/tweet?text=${encodeURIComponent(article.title)}" target="_blank" style="color: #0284C7; text-decoration: none; font-weight: 600;">Twitter/X</a>
-            <a href="https://api.whatsapp.com/send?text=${encodeURIComponent(article.title)}" target="_blank" style="color: #16A34A; text-decoration: none; font-weight: 600;">WhatsApp</a>
-          </div>
-        </article>
-      `).join('');
-    }
-
-    function filterCategory(category) {
-      document.getElementById('current-section-label').innerText = category === 'All' ? 'Latest Essays & Research Papers' : category;
-      if (category === 'All') {
-        renderArticles(allArticles);
-      } else {
-        const filtered = allArticles.filter(a => a.category && a.category.toLowerCase() === category.toLowerCase());
-        renderArticles(filtered);
-      }
-    }
-
-    function searchArticles() {
-      const query = document.getElementById('search-input').value.toLowerCase();
-      const searched = allArticles.filter(a => 
-        (a.title && a.title.toLowerCase().includes(query)) ||
-        (a.author && a.author.toLowerCase().includes(query)) ||
-        (a.excerpt && a.excerpt.toLowerCase().includes(query)) ||
-        (a.content && a.content.toLowerCase().includes(query))
-      );
-      renderArticles(searched);
-    }
-
-    fetchArticles();
-  </script>
+async function load(){
+  $('#main').innerHTML='<div class="sk"></div><div class="sk"></div><div class="sk"></div>';
+  try{
+    let items=[],k;
+    do{const r=await db.scan({TableName:TABLE,ExclusiveStartKey:k}).promise();items.push(...r.Items);k=r.LastEvaluatedKey}while(k);
+    all=items.filter(a=>a&&a.id&&a.title).sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt)));
+    ready=true;route();
+  }catch(e){
+    $('#main').innerHTML='<div class="empty"><p><b>The articles could not be loaded.</b><br>Check your internet connection, then try again.</p><button class="btn" id="retry">Try again</button></div>';
+    $('#retry').onclick=load;
+  }
+}
+function drawNav(){
+  $('#cats').innerHTML=CATS.map(c=>`<button aria-pressed="${c===cat}" data-c="${esc(c)}">${c==='All'?'Latest':esc(c)}</button>`).join('');
+  $('#topics').innerHTML=CATS.slice(1).map(c=>`<li><button data-c="${esc(c)}"><span>${esc(c)}</span><span>${all.filter(a=>a.category===c).length}</span></button></li>`).join('');
+}
+function list(){
+  document.title='MANĀR | Law, History, Public Life';
+  $('#wrap').className='wrap';$('#side').hidden=false;drawNav();
+  const s=q.trim().toLowerCase();
+  const rows=all.filter(a=>(cat==='All'||a.category===cat)&&(!s||[a.title,a.author,a.excerpt,a.content].join(' ').toLowerCase().includes(s)));
+  if(!rows.length){
+    $('#main').innerHTML=`<div class="empty"><p>${all.length?'No articles match your search or topic.':'No articles have been published yet.'}</p>${(s||cat!=='All')?'<button class="btn alt" id="clr">Show all articles</button>':''}</div>`;
+    const c=$('#clr');if(c)c.onclick=()=>{q='';cat='All';$('#q').value='';list()};return;
+  }
+  const head=(!s&&cat==='All')?rows[0]:null,rest=head?rows.slice(1):rows;
+  $('#main').innerHTML=(head?`<article class="feat">${meta(head)}<h2><a href="${href(head)}">${esc(head.title)}</a></h2><p>${esc(blurb(head))}</p><a class="more" href="${href(head)}">Read the essay</a></article>`:'')
+   +rest.map(a=>`<article class="card">${meta(a)}<h2><a href="${href(a)}">${esc(a.title)}</a></h2><p>${esc(blurb(a))}</p></article>`).join('');
+}
+function article(id){
+  const a=all.find(x=>x.id===id);
+  $('#wrap').className='wrap single';$('#side').hidden=true;
+  if(!a){$('#main').innerHTML='<div class="empty"><p>This article could not be found. It may have been removed.</p><a class="btn" href="#/">Back to all articles</a></div>';return}
+  document.title=a.title+' | MANĀR';
+  $('#main').innerHTML=`<article class="read"><a href="#/" class="ui" style="font-weight:600">‹ All articles</a>${meta(a)}<h1>${esc(a.title)}</h1>${a.excerpt?`<p class="lede">${esc(a.excerpt)}</p>`:''}<div class="body">${paras(a.content)}</div><p><button class="btn alt" id="share">Copy link to this article</button></p></article>`;
+  $('#share').onclick=async e=>{try{await navigator.clipboard.writeText(location.href);e.target.textContent='Link copied'}catch(_){prompt('Copy this link:',location.href)}};
+}
+function route(){
+  if(!ready)return;
+  const m=location.hash.match(/^#\/a\/(.+)$/);
+  m?article(decodeURIComponent(m[1])):list();
+  window.scrollTo(0,0);
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-c]');if(!b)return;
+  cat=b.dataset.c;if(location.hash!==''&&location.hash!=='#/')location.hash='#/';else list();
+});
+$('#q').addEventListener('input',e=>{q=e.target.value;if(/^#\/a\//.test(location.hash))location.hash='#/';else list()});
+window.addEventListener('hashchange',route);
+$('#yr').textContent=new Date().getFullYear();
+drawNav();load();
+</script>
 </body>
 </html>
