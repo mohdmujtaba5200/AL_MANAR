@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/aws-sdk/2.1354.0/aws-sdk.min.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MANĀR | Law, History, Public Life</title>
@@ -145,6 +146,7 @@
         </p>
         <div class="meta-info">By Uzair Ali • 12 Min Read • Oct 12, 2026</div>
       </article>
+      <div id="articles-container" style="margin-top: 30px;">Loading articles...</div>
     </main>
 
     <!-- Right Column: Sidebar -->
@@ -183,6 +185,48 @@
     </ul>
     <p>© 2026 MANĀR. All rights reserved. Grounded in South Asia & attentive to global traditions.</p>
   </footer>
+
+  <script>
+  AWS.config.region = 'ap-south-1';
+  AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+    IdentityPoolId: 'ap-south-1:be40eb5b-9951-44d2-a159-6f2846331267', // Replace with your identity pool ID
+  });
+
+  const dynamodb = new AWS.DynamoDB.DocumentClient();
+
+  async function fetchArticles() {
+    const params = { TableName: 'Articles' };
+
+    try {
+      const data = await dynamodb.scan(params).promise();
+      const container = document.getElementById('articles-container');
+      
+      if (!data.Items || data.Items.length === 0) {
+        container.innerHTML = '<p>No articles published yet.</p>';
+        return;
+      }
+
+      const articles = data.Items.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+      container.innerHTML = articles.map(article => `
+        <article style="background: white; padding: 25px; margin-bottom: 25px; border-radius: 6px; border: 1px solid #E2E8F0;">
+          <span style="font-size: 0.8rem; color: #7F1D1D; font-weight: 600; text-transform: uppercase;">${article.category} • ${article.formatType}</span>
+          <h2 style="margin: 10px 0 5px 0; color: #0F172A;">${article.title}</h2>
+          <p style="font-size: 0.85rem; color: #64748B; margin-bottom: 15px;">By ${article.author}</p>
+          <p style="color: #334155; line-height: 1.6;">${article.excerpt}</p>
+          ${article.image ? `<img src="${article.image}" alt="Article Image" style="max-width: 100%; border-radius: 4px; margin-top: 15px;">` : ''}
+          ${article.video ? `<div style="margin-top: 15px;"><a href="${article.video}" target="_blank" style="color: #7F1D1D; font-weight: 600; text-decoration: none;">Watch Video / Media Link &rarr;</a></div>` : ''}
+        </article>
+      `).join('');
+
+    } catch (err) {
+      console.error('Error fetching articles:', err);
+      document.getElementById('articles-container').innerHTML = '<p>Failed to load articles.</p>';
+    }
+  }
+
+  fetchArticles();
+</script>
 
 </body>
 </html>
