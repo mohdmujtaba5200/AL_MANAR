@@ -145,7 +145,7 @@
       <div class="section-label" id="current-section-label">Latest Essays & Research Papers</div>
       
       <div id="articles-container">
-        <p style="color: var(--text-muted);">Loading articles...</p>
+        <p style="color: var(--text-muted);">Loading articles from database...</p>
       </div>
     </main>
 
@@ -185,63 +185,48 @@
     <p>© 2026 MANĀR. All rights reserved. Grounded in South Asia & attentive to global traditions.</p>
   </footer>
 
-  <!-- Application Script with Fail-Safe Fallback -->
+  <!-- Application Script (Strictly ap-south-1 Bound & Live DynamoDB Integration) -->
   <script>
-    // Fallback sample articles so the client demo never breaks
-    const fallbackArticles = [
-      {
-        id: '1',
-        title: 'The Language of Sovereignty: Blasphemy, Free Speech, and the Post-Colonial State',
-        category: 'Law & Courts',
-        formatType: 'Long Read',
-        author: 'Uzair Ali',
-        createdAt: '2026-10-12',
-        excerpt: 'Imagine a storyteller or a philosopher standing in a crowded marketplace, weaving satire, moral critique, and sacred verse into the open air. Today, that same speech is dragged under the glare of a magistrate\'s lamp, translated into cold legal prose, and stamped as an offense against public order and security.',
-        image: ''
-      },
-      {
-        id: '2',
-        title: 'Mapping Subaltern Historiography in Modern South Asia',
-        category: 'Histories',
-        formatType: 'Research Paper',
-        author: 'Editorial Board',
-        createdAt: '2026-10-10',
-        excerpt: 'An inquiry into how historical narratives are constructed from the margins, bypassing elite nationalist historiography to foreground peasant uprisings, labor movements, and Dalit counter-publics.',
-        image: ''
-      }
-    ];
+    // 1. Explicitly force AWS SDK configuration to ap-south-1
+    AWS.config.update({ region: 'ap-south-1' });
+
+    // 2. Bind Cognito Identity Pool strictly to the Mumbai regional endpoint
+    AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+      IdentityPoolId: 'ap-south-1:be40eb5b-9951-44d2-a159-6f2046131267',
+      region: 'ap-south-1'
+    });
 
     let allArticles = [];
+
+    function getDynamoDB() {
+      return new Promise((resolve, reject) => {
+        AWS.config.credentials.get((err) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(new AWS.DynamoDB.DocumentClient({ region: 'ap-south-1' }));
+          }
+        });
+      });
+    }
 
     async function fetchArticles() {
       const container = document.getElementById('articles-container');
       try {
-        AWS.config.update({ region: 'ap-south-1' });
-        AWS.config.credentials = new AWS.CognitoIdentityCredentials({
-          IdentityPoolId: 'ap-south-1:be40eb5b-9951-44d2-a159-6f2046131267'
-        }, { region: 'ap-south-1' });
-
-        const dynamodb = await new Promise((resolve, reject) => {
-          AWS.config.credentials.get((err) => {
-            if (err) reject(err);
-            else resolve(new AWS.DynamoDB.DocumentClient({ region: 'ap-south-1' }));
-          });
-        });
-
+        const dynamodb = await getDynamoDB();
         const data = await dynamodb.scan({ TableName: 'Articles' }).promise();
 
         if (!data.Items || data.Items.length === 0) {
-          allArticles = fallbackArticles;
-        } else {
-          allArticles = data.Items.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+          container.innerHTML = '<p style="color: var(--text-muted);">No published articles found in the database. Use "+ Upload Article" to add your first essay.</p>';
+          return;
         }
+
+        allArticles = data.Items.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         renderArticles(allArticles);
 
       } catch (err) {
-        console.warn('AWS connection notice (falling back to local preview mode for client demo):', err.message);
-        // Seamless fallback so the client demo works instantly without errors
-        allArticles = fallbackArticles;
-        renderArticles(allArticles);
+        console.error('Error fetching articles from DynamoDB:', err);
+        container.innerHTML = `<p style="color: #7F1D1D; background: #FEE2E2; padding: 12px; border-radius: 4px;">Failed to load articles: ${err.message}</p>`;
       }
     }
 
@@ -261,7 +246,7 @@
           <h2 style="margin: 5px 0 10px 0; color: #0F172A; font-family: var(--font-heading); line-height: 1.3;">${article.title || 'Untitled'}</h2>
           <p style="font-size: 0.85rem; color: #64748B; margin-bottom: 15px;">By ${article.author || 'Anonymous'} • ${article.createdAt ? new Date(article.createdAt).toLocaleDateString() : 'Oct 2026'}</p>
           <p style="color: #334155; line-height: 1.6; margin-bottom: 15px;">${article.excerpt || article.content || ''}</p>
-          ${article.image ? `<img src="${article.image}" alt="Article Image" style="max-width: 100%; border-radius: 4px; margin-bottom: 15px;">` : ''}
+          ${article.image ? `<img src="${article.image}" alt="Article Image" style="max-width: 100%; border-radius: 4px; margin-bottom: 15px;" onerror="this.style.display='none'">` : ''}
           ${article.video ? `<div style="margin-bottom: 15px;"><a href="${article.video}" target="_blank" style="color: var(--accent-red); font-weight: 600; text-decoration: none;">Watch Media Link &rarr;</a></div>` : ''}
           
           <!-- Social Share Controls -->
@@ -298,19 +283,17 @@
     async function deleteArticle(articleId) {
       if (!confirm('Are you sure you want to delete this article?')) return;
       try {
-        AWS.config.update({ region: 'ap-south-1' });
-        const dynamodb = new AWS.DynamoDB.DocumentClient({ region: 'ap-south-1' });
+        const dynamodb = await getDynamoDB();
         await dynamodb.delete({ TableName: 'Articles', Key: { id: articleId } }).promise();
         alert('Article deleted successfully!');
         fetchArticles();
       } catch (err) {
-        // If demo mode or delete restricted, remove locally for smooth presentation
-        allArticles = allArticles.filter(a => a.id !== articleId);
-        renderArticles(allArticles);
-        alert('Article removed from view successfully.');
+        console.error('Error deleting article:', err);
+        alert('Failed to delete article: ' + err.message);
       }
     }
 
+    // Initialize data fetch on page load
     fetchArticles();
   </script>
 
