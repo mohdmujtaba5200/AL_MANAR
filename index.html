@@ -145,7 +145,7 @@
       <div class="section-label" id="current-section-label">Latest Essays & Research Papers</div>
       
       <div id="articles-container">
-        <p style="color: var(--text-muted);">Loading articles from database...</p>
+        <p style="color: var(--text-muted);">Loading articles from ap-south-1 database...</p>
       </div>
     </main>
 
@@ -185,15 +185,17 @@
     <p>© 2026 MANĀR. All rights reserved. Grounded in South Asia & attentive to global traditions.</p>
   </footer>
 
-  <!-- Application Script (Strictly ap-south-1 Bound & Live DynamoDB Integration) -->
+  <!-- Application Script with Forced ap-south-1 Regional Endpoints -->
   <script>
-    // 1. Explicitly force AWS SDK configuration to ap-south-1
+    // 1. Force global SDK region to ap-south-1
     AWS.config.update({ region: 'ap-south-1' });
 
-    // 2. Bind Cognito Identity Pool strictly to the Mumbai regional endpoint
+    // 2. Force Cognito Identity Pool credentials with explicit regional endpoint override
     AWS.config.credentials = new AWS.CognitoIdentityCredentials({
-      IdentityPoolId: 'ap-south-1:be40eb5b-9951-44d2-a159-6f2046131267',
-      region: 'ap-south-1'
+      IdentityPoolId: 'ap-south-1:be40eb5b-9951-44d2-a159-6f2046131267'
+    }, {
+      region: 'ap-south-1',
+      endpoint: 'https://cognito-identity.ap-south-1.amazonaws.com'
     });
 
     let allArticles = [];
@@ -204,7 +206,11 @@
           if (err) {
             reject(err);
           } else {
-            resolve(new AWS.DynamoDB.DocumentClient({ region: 'ap-south-1' }));
+            // Explicitly force DynamoDB document client to ap-south-1 endpoint
+            resolve(new AWS.DynamoDB.DocumentClient({ 
+              region: 'ap-south-1',
+              endpoint: 'https://dynamodb.ap-south-1.amazonaws.com'
+            }));
           }
         });
       });
@@ -217,7 +223,7 @@
         const data = await dynamodb.scan({ TableName: 'Articles' }).promise();
 
         if (!data.Items || data.Items.length === 0) {
-          container.innerHTML = '<p style="color: var(--text-muted);">No published articles found in the database. Use "+ Upload Article" to add your first essay.</p>';
+          container.innerHTML = '<p style="color: var(--text-muted);">No published articles found in the database. Use "+ Upload Article" to publish your first essay.</p>';
           return;
         }
 
