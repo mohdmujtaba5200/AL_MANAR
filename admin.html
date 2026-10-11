@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/aws-sdk/2.1354.0/aws-sdk.min.js"></script>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MANĀR | Editorial Portal</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/aws-sdk/2.1354.0/aws-sdk.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Plus Jakarta Sans', sans-serif; background: #F8FAFC; color: #0F172A; padding: 40px 20px; }
@@ -13,10 +14,13 @@
     input, select, textarea { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #CBD5E1; border-radius: 4px; box-sizing: border-box; font-family: inherit; }
     button { background: #7F1D1D; color: white; border: none; padding: 12px 20px; font-weight: 700; margin-top: 20px; cursor: pointer; width: 100%; border-radius: 4px; }
     button:hover { background: #0F172A; }
+    .nav-back { display: inline-block; margin-bottom: 20px; color: #7F1D1D; text-decoration: none; font-weight: 600; font-size: 0.85rem; }
+    .nav-back:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
   <div class="portal-box">
+    <a href="index.html" class="nav-back">&larr; Back to Live Journal</a>
     <h2>MANĀR Editorial Portal</h2>
     <p style="font-size: 0.85rem; color: #64748B;">Authorized Editor Submission Form</p>
     
@@ -48,55 +52,59 @@
       <label>Article Excerpt / Abstract</label>
       <textarea id="excerpt" name="excerpt" rows="3" placeholder="Brief summary for homepage layout..."></textarea>
 
-      <label>Full Content (Markdown or HTML)</label>
+      <label>Full Content</label>
       <textarea id="content" name="content" rows="10" placeholder="Paste full article text here..."></textarea>
-<label>Featured Image URL</label>
+
+      <label>Featured Image URL (Optional)</label>
       <input type="text" id="image" name="image" placeholder="https://example.com/photo.jpg">
 
-      <label>Embedded Video Link (YouTube / Vimeo)</label>
+      <label>Embedded Video Link (Optional)</label>
       <input type="text" id="video" name="video" placeholder="https://youtube.com/watch?v=...">
+      
       <button type="submit">Publish Article</button>
     </form>
   </div>
+
   <script>
-  // Initialize AWS Credentials & DynamoDB
-  AWS.config.region = 'ap-south-1'; // Change to your preferred AWS region
-  AWS.config.credentials = new AWS.CognitoIdentityCredentials({
-    IdentityPoolId: 'ap-south-1:be40eb5b-9951-44d2-a159-6f2846331267', // We will generate this in AWS Console next
-  });
+    // Strict ap-south-1 configuration with matching verified Identity Pool ID
+    AWS.config.update({ region: 'ap-south-1' });
+    
+    AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+      IdentityPoolId: 'ap-south-1:be40eb5b-9951-44d2-a159-6f2846331267',
+    });
 
-  const dynamodb = new AWS.DynamoDB.DocumentClient();
+    const dynamodb = new AWS.DynamoDB.DocumentClient({ region: 'ap-south-1' });
 
-  document.getElementById('articleForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
+    document.getElementById('articleForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
 
-    const articleData = {
-      id: Date.now().toString(),
-      title: document.getElementById('title').value,
-      author: document.getElementById('author').value,
-      category: document.getElementById('category').value,
-      formatType: document.getElementById('formatType').value,
-      excerpt: document.getElementById('excerpt').value,
-      content: document.getElementById('content').value,
-      image: document.getElementById('image').value || '',
-      video: document.getElementById('video').value || '',
-      createdAt: new Date().toISOString()
-    };
+      const articleData = {
+        id: Date.now().toString(),
+        title: document.getElementById('title').value,
+        author: document.getElementById('author').value,
+        category: document.getElementById('category').value,
+        formatType: document.getElementById('formatType').value,
+        excerpt: document.getElementById('excerpt').value,
+        content: document.getElementById('content').value,
+        image: document.getElementById('image').value || '',
+        video: document.getElementById('video').value || '',
+        createdAt: new Date().toISOString()
+      };
 
-    const params = {
-      TableName: 'Articles',
-      Item: articleData
-    };
+      const params = {
+        TableName: 'Articles',
+        Item: articleData
+      };
 
-    try {
-      await dynamodb.put(params).promise();
-      alert('Article published successfully!');
-      this.reset();
-    } catch (err) {
-      console.error('Error publishing article:', err);
-      alert('Failed to publish article. Check browser console for details.');
-    }
-  });
-</script>
+      try {
+        await dynamodb.put(params).promise();
+        alert('Article published successfully!');
+        this.reset();
+      } catch (err) {
+        console.error('Error publishing article:', err);
+        alert('Failed to publish article: ' + err.message);
+      }
+    });
+  </script>
 </body>
 </html>

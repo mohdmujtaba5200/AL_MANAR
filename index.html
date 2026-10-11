@@ -98,7 +98,6 @@
 </head>
 <body>
 
-  <!-- Top Announcement Bar -->
   <div class="utility-bar">
     <div class="ticker">
       <span class="badge">Latest Issue</span>
@@ -107,7 +106,6 @@
     <div>Oct 2026</div>
   </div>
 
-  <!-- Header -->
   <header>
     <svg class="top-logo-icon" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M10 30 L50 10 L90 30 L50 90 Z" stroke="#0F172A" stroke-width="6" fill="none"/>
@@ -120,7 +118,6 @@
     <p class="site-tagline">Law, History, Public Life.</p>
   </header>
 
-  <!-- Navigation Menu -->
   <nav>
     <ul class="nav-links">
       <li><a onclick="filterCategory('All')">Latest</a></li>
@@ -135,21 +132,15 @@
     </ul>
   </nav>
 
-  <!-- Main Content Layout -->
   <div class="container">
-    
-    <!-- Main Feed -->
     <main>
       <input type="text" id="search-input" class="search-box" placeholder="🔍 Search articles by title, author, or keywords..." onkeyup="searchArticles()">
-
       <div class="section-label" id="current-section-label">Latest Essays & Research Papers</div>
-      
       <div id="articles-container">
         <p style="color: var(--text-muted);">Loading articles from ap-south-1 database...</p>
       </div>
     </main>
 
-    <!-- Sidebar -->
     <aside>
       <div class="sidebar">
         <div class="section-label">Analytical Lenses</div>
@@ -163,7 +154,6 @@
           <li><a onclick="filterCategory('Histories')">Subaltern Hermeneutics</a></li>
         </ul>
 
-        <!-- Newsletter Signup -->
         <div class="newsletter-box">
           <h4>Subscribe to Manār</h4>
           <p>Get our latest essays and research papers delivered straight to your inbox.</p>
@@ -172,10 +162,8 @@
         </div>
       </div>
     </aside>
-
   </div>
 
-  <!-- Footer -->
   <footer>
     <ul class="footer-links">
       <li><a href="about.html">About Us</a></li>
@@ -185,17 +173,12 @@
     <p>© 2026 MANĀR. All rights reserved. Grounded in South Asia & attentive to global traditions.</p>
   </footer>
 
-  <!-- Application Script with Forced ap-south-1 Regional Endpoints -->
   <script>
-    // 1. Force global SDK region to ap-south-1
+    // Strict ap-south-1 configuration with correct verified Identity Pool ID
     AWS.config.update({ region: 'ap-south-1' });
 
-    // 2. Force Cognito Identity Pool credentials with explicit regional endpoint override
     AWS.config.credentials = new AWS.CognitoIdentityCredentials({
-      IdentityPoolId: 'ap-south-1:be40eb5b-9951-44d2-a159-6f2046131267'
-    }, {
-      region: 'ap-south-1',
-      endpoint: 'https://cognito-identity.ap-south-1.amazonaws.com'
+      IdentityPoolId: 'ap-south-1:be40eb5b-9951-44d2-a159-6f2846331267'
     });
 
     let allArticles = [];
@@ -206,11 +189,7 @@
           if (err) {
             reject(err);
           } else {
-            // Explicitly force DynamoDB document client to ap-south-1 endpoint
-            resolve(new AWS.DynamoDB.DocumentClient({ 
-              region: 'ap-south-1',
-              endpoint: 'https://dynamodb.ap-south-1.amazonaws.com'
-            }));
+            resolve(new AWS.DynamoDB.DocumentClient({ region: 'ap-south-1' }));
           }
         });
       });
@@ -255,7 +234,6 @@
           ${article.image ? `<img src="${article.image}" alt="Article Image" style="max-width: 100%; border-radius: 4px; margin-bottom: 15px;" onerror="this.style.display='none'">` : ''}
           ${article.video ? `<div style="margin-bottom: 15px;"><a href="${article.video}" target="_blank" style="color: var(--accent-red); font-weight: 600; text-decoration: none;">Watch Media Link &rarr;</a></div>` : ''}
           
-          <!-- Social Share Controls -->
           <div style="display: flex; gap: 12px; align-items: center; border-top: 1px solid #F1F5F9; padding-top: 12px; font-size: 0.8rem;">
             <span style="color: var(--text-muted); font-weight: 600;">Share:</span>
             <a href="https://twitter.com/intent/tweet?text=${encodeURIComponent(article.title)}" target="_blank" style="color: #0284C7; text-decoration: none; font-weight: 600;">Twitter/X</a>
@@ -299,9 +277,7 @@
       }
     }
 
-    // Initialize data fetch on page load
     fetchArticles();
   </script>
-
 </body>
 </html>
