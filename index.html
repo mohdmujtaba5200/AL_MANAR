@@ -187,13 +187,13 @@
 
   <!-- Application Script -->
   <script>
-    // Explicitly lock global config and Cognito credentials to ap-south-1
-    AWS.config.update({
-      region: 'ap-south-1',
-      credentials: new AWS.CognitoIdentityCredentials({
-        IdentityPoolId: 'ap-south-1:be40eb5b-9951-44d2-a159-6f2046131267',
-        region: 'ap-south-1'
-      })
+    // 1. Configure global region and Cognito Identity Pool with explicit service region
+    AWS.config.update({ region: 'ap-south-1' });
+    
+    AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+      IdentityPoolId: 'ap-south-1:be40eb5b-9951-44d2-a159-6f2046131267'
+    }, {
+      region: 'ap-south-1' // Forces the Cognito client to query the Mumbai regional endpoint
     });
 
     let allArticles = [];
@@ -290,10 +290,9 @@
       }
     }
 
-    // Initialize data fetch on page load
     fetchArticles();
   </script>
-  
+
 
 </body>
 </html>
